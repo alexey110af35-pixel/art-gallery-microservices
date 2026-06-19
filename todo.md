@@ -8,9 +8,9 @@
 - [x] Добавить папку /docs со структурой
 
 ## Этап 1: Docker Compose (инфраструктура)
-- [ ] Написать docker-compose.yml (PostgreSQL, Kafka, Zookeeper, Kafka UI, Redis, MinIO)
-- [ ] Написать .env для переменных
-- [ ] Проверить работу всех контейнеров
+- [x] Написать docker-compose.yml (PostgreSQL, Kafka, Zookeeper, Kafka UI, Redis, MinIO)
+- [x] Написать .env для переменных
+- [x] Проверить работу всех контейнеров
 
 ## Этап 2: API Gateway + Gallery Service
 - [ ] Создать Gallery.API (Web API)
