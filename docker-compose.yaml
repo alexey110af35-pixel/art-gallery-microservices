@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # ========== БАЗЫ ДАННЫХ ==========
+  postgres:
+    image: postgres:15-alpine
+    container_name: art-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: art_gallery
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - art-network
+
+  # ========== БРОКЕР СООБЩЕНИЙ ==========
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: art-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - art-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: art-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+    networks:
+      - art-network
+
+  # ========== UI ДЛЯ KAFKA ==========
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: art-kafka-ui
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - "8080:8080"
+    networks:
+      - art-network
+
+  # ========== КЕШ ==========
+  redis:
+    image: redis:7-alpine
+    container_name: art-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - art-network
+
+  # ========== ХРАНИЛИЩЕ ФАЙЛОВ (S3-совместимое) ==========
+  minio:
+    image: minio/minio:latest
+    container_name: art-minio
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    networks:
+      - art-network
+
+# ========== ТОМА ДЛЯ ХРАНЕНИЯ ДАННЫХ ==========
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+
+# ========== СЕТЬ ==========
+networks:
+  art-network:
+    driver: bridge
