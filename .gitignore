@@ -1,1 +1,6 @@
 .env
+/.vs
+/src/ApiGateway/bin/Debug/net9.0
+/src/ApiGateway/obj
+/src/Services/Gallery/Gallery.API/bin/Debug
+/src/Services/Gallery/Gallery.API/obj
