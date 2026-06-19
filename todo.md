@@ -2,10 +2,10 @@
 
 ## Этап 0: Подготовка
 - [x] Создать репозиторий на GitHub
-- [ ] Создать структуру папок
-- [ ] Добавить .gitignore
-- [ ] Добавить README.md
-- [ ] Добавить папку /docs со структурой
+- [x] Создать структуру папок
+- [x] Добавить .gitignore
+- [x] Добавить README.md
+- [x] Добавить папку /docs со структурой
 
 ## Этап 1: Docker Compose (инфраструктура)
 - [ ] Написать docker-compose.yml (PostgreSQL, Kafka, Zookeeper, Kafka UI, Redis, MinIO)
