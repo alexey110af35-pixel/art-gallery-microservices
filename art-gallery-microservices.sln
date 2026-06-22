@@ -13,6 +13,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gallery", "Gallery", "{3BE9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gallery.API", "src\Services\Gallery\Gallery.API\Gallery.API.csproj", "{50B443D1-DCC8-45B6-A103-F3D21BF2F8D6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "context", "context", "{6B75C815-2DD9-4F99-9993-676D4694EDB0}"
+	ProjectSection(SolutionItems) = preProject
+		docs\context\current-state.md = docs\context\current-state.md
+		docs\context\decisions-log.md = docs\context\decisions-log.md
+		docs\context\project-overview.md = docs\context\project-overview.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,5 +65,9 @@ Global
 		{984BB9B3-3FA3-BE33-9484-CAC21695A33C} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{3BE9291A-F7DB-2027-BC11-09F7A7A2DA8B} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 		{50B443D1-DCC8-45B6-A103-F3D21BF2F8D6} = {3BE9291A-F7DB-2027-BC11-09F7A7A2DA8B}
+		{6B75C815-2DD9-4F99-9993-676D4694EDB0} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4BCF2262-F7DC-47CD-8830-24CBFCA04EB4}
 	EndGlobalSection
 EndGlobal
