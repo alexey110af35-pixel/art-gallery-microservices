@@ -2,8 +2,11 @@
 
 ### Что сделано
 - [x] Создан репозиторий на GitHub
-- [x] Поднята инфраструктура через Docker Compose (PostgreSQL, Kafka, Redis, MinIO)
-- [x] Контейнеры успешно запущены и проверены
+- [x] Поднята инфраструктура через Docker Compose
+- [x] Созданы проекты ApiGateway и Gallery.API
+- [x] Реализован CRUD для картин
+- [x] Создана и применена миграция в PostgreSQL
+- [x] Проверена работа API через Swagger
 
 ### Что в работе
-- Ожидаем начала Этапа 2: API Gateway + Gallery Service
+- Ожидаем начала Этапа 3: Identity Service (JWT)
