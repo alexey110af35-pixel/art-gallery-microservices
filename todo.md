@@ -13,12 +13,12 @@
 - [x] Проверить работу всех контейнеров
 
 ## Этап 2: API Gateway + Gallery Service
-- [ ] Создать Gallery.API (Web API)
-- [ ] Подключить EF Core + Npgsql
-- [ ] Создать модель Painting и миграции
-- [ ] Реализовать CRUD-контроллеры
-- [ ] Создать ApiGateway (YARP) и настроить маршруты
-- [ ] Проверить работу через Swagger/Postman
+- [x] Создать Gallery.API (Web API)
+- [x] Подключить EF Core + Npgsql
+- [x] Создать модель Painting и миграции
+- [x] Реализовать CRUD-контроллеры
+- [x] Создать ApiGateway (YARP) и настроить маршруты
+- [x] Проверить работу через Swagger/Postman
 
 ## Этап 3: Identity Service (JWT)
 - [ ] Создать Identity.API
