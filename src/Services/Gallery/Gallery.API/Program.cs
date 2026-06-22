@@ -1,49 +1,22 @@
 using Gallery.API.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-
-DotNetEnv.Env.Load();
+using Shared.Extensions;
+using Shared.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Подключение к PostgreSQL
+builder.Configuration.LoadDotEnv();
+builder.Services.AddJwtAuthentication(builder.Configuration); 
+builder.Services.AddCustomSwagger("Gallery API");
+
 builder.Services.AddDbContext<AppDbContext>();
-
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen();
-
-// Читаем JWT-настройки из переменных окружения
-var secretKey = Environment.GetEnvironmentVariable("JWT__SECRET_KEY")
-	?? throw new InvalidOperationException("JWT__SECRET_KEY not set");
-var issuer = Environment.GetEnvironmentVariable("JWT__ISSUER") ?? "ArtGallery";
-var audience = Environment.GetEnvironmentVariable("JWT__AUDIENCE") ?? "ArtGalleryUsers";
-
-var key = Encoding.UTF8.GetBytes(secretKey);
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-	.AddJwtBearer(options =>
-	{
-		options.TokenValidationParameters = new TokenValidationParameters
-		{
-			ValidateIssuer = true,
-			ValidateAudience = true,
-			ValidateLifetime = true,
-			ValidateIssuerSigningKey = true,
-			ValidIssuer = issuer,
-			ValidAudience = audience,
-			IssuerSigningKey = new SymmetricSecurityKey(key)
-		};
-	});
-
-builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Автоматическое применение миграций при старте
+app.UseGlobalExceptionHandler();
+
+// Миграции
 using (var scope = app.Services.CreateScope())
 {
 	var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
