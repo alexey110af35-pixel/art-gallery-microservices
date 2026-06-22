@@ -5,11 +5,20 @@ namespace Gallery.API.Data;
 
 public class AppDbContext : DbContext
 {
-	public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-	{
-	}
+	private readonly IConfiguration _configuration;
 
 	public DbSet<Painting> Paintings { get; set; }
+
+	public AppDbContext(IConfiguration configuration)
+	{
+		_configuration = configuration;
+	}
+
+	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+	{
+		optionsBuilder
+			.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
+	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
