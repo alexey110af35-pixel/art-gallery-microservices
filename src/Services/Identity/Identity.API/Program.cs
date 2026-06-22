@@ -1,4 +1,5 @@
-using Gallery.API.Data;
+using Identity.API.Data;
+using Identity.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,10 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Подключение к PostgreSQL
 builder.Services.AddDbContext<AppDbContext>();
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen();
+// Добавляем JWT-сервис
+builder.Services.AddScoped<JwtService>();
 
 // Читаем JWT-настройки из переменных окружения
 var secretKey = Environment.GetEnvironmentVariable("JWT__SECRET_KEY")
@@ -39,11 +38,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		};
 	});
 
+
 builder.Services.AddAuthorization();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Автоматическое применение миграций при старте
+// Автоматическое применение миграций
 using (var scope = app.Services.CreateScope())
 {
 	var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();

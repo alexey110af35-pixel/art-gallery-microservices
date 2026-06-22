@@ -1,5 +1,6 @@
 ﻿using Gallery.API.Data;
 using Gallery.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace Gallery.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class PaintingsController : ControllerBase
 {
 	private readonly AppDbContext _context;
