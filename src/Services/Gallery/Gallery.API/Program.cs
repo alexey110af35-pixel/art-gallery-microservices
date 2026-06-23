@@ -6,7 +6,7 @@ using Shared.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.LoadDotEnv();
-builder.Services.AddJwtAuthentication(builder.Configuration); 
+builder.Services.AddJwtAuthentication(); 
 builder.Services.AddCustomSwagger("Gallery API");
 
 builder.Services.AddDbContext<AppDbContext>();

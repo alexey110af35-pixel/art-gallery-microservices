@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Config;
 using System.Text;
 
 namespace Shared.Extensions;
@@ -9,24 +9,14 @@ namespace Shared.Extensions;
 public static class JwtExtensions
 {
 	public static IServiceCollection AddJwtAuthentication(
-		this IServiceCollection services,
-		IConfiguration configuration)
+		this IServiceCollection services)
 	{
-		// 1. Пытаемся прочитать ключ из переменных окружения (.env)
-		var secretKey = Environment.GetEnvironmentVariable("JWT__SECRET_KEY")
-			?? configuration["Jwt:SecretKey"]
-			?? throw new InvalidOperationException("JWT__SECRET_KEY is not set in .env or appsettings.json");
+		// Читаем настройки из статического класса
+		var secretKey = JwtSettings.SecretKey;
+		var issuer = JwtSettings.Issuer;
+		var audience = JwtSettings.Audience;
 
-		// 2. Читаем остальные параметры с fallback на значения по умолчанию
-		var issuer = Environment.GetEnvironmentVariable("JWT__ISSUER")
-			?? configuration["Jwt:Issuer"]
-			?? "ArtGallery";
-
-		var audience = Environment.GetEnvironmentVariable("JWT__AUDIENCE")
-			?? configuration["Jwt:Audience"]
-			?? "ArtGalleryUsers";
-
-		// 3. Проверяем длину ключа (для HS256 нужно >= 32 символов)
+		// Проверяем длину ключа (для HS256 нужно >= 32 символов)
 		if (secretKey.Length < 32)
 		{
 			throw new InvalidOperationException(
@@ -34,11 +24,9 @@ public static class JwtExtensions
 				"Minimum required: 32 chars (256 bits) for HS256 algorithm.");
 		}
 
-		Console.WriteLine($"secretKey: {secretKey}");
-
 		var key = Encoding.UTF8.GetBytes(secretKey);
 
-		// 4. Настраиваем аутентификацию
+		// Настраиваем аутентификацию
 		services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 			.AddJwtBearer(options =>
 			{

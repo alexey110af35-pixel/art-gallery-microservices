@@ -4,7 +4,7 @@ using Shared.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.LoadDotEnv();
-builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddJwtAuthentication();
 //builder.Services.AddCustomSwagger("Art Gallery API Gateway");
 
 // ===== ÑÏÅÖÈÔÈ×ÍÛÅ ÄËß GATEWAY =====
