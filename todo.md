@@ -21,10 +21,10 @@
 - [x] Проверить работу через Swagger/Postman
 
 ## Этап 3: Identity Service (JWT)
-- [ ] Создать Identity.API
-- [ ] Реализовать регистрацию и вход
-- [ ] Настроить JWT-валидацию в Gateway
-- [ ] Защитить Gallery API
+- [x] Создать Identity.API
+- [x] Реализовать регистрацию и вход
+- [x] Настроить JWT-валидацию в Gateway
+- [x] Защитить Gallery API
 
 ## Этап 4: Kafka + Upload Service
 - [ ] Создать Upload.API
