@@ -1,4 +1,6 @@
 using Identity.API.Data;
+using Identity.API.Domain.Repositories;
+using Identity.API.Infrastructure.Data;
 using Identity.API.Services;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
@@ -11,7 +13,7 @@ builder.Services.AddJwtAuthentication();
 builder.Services.AddCustomSwagger("Identity API");
 
 builder.Services.AddDbContext<AppDbContext>();
-
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddControllers();
 

@@ -1,10 +1,9 @@
-﻿using Gallery.API.Data;
+﻿using Gallery.API.Domain.Repositories;
 using Gallery.API.Extensions;
 using Gallery.API.Kafka;
 using Gallery.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Gallery.API.Controllers;
 
@@ -13,26 +12,26 @@ namespace Gallery.API.Controllers;
 [Authorize]
 public class PaintingsController : ControllerBase
 {
-	private readonly ILogger<PaintingsController> _logger;
-	private readonly AppDbContext _context;
+	private readonly IPaintingRepository _repository;
 	private readonly GalleryEventProducer _eventProducer;
+	private readonly ILogger<PaintingsController> _logger;
 
-	public PaintingsController(ILogger<PaintingsController> logger, AppDbContext context, GalleryEventProducer eventProducer)
+	public PaintingsController(
+		IPaintingRepository repository,
+		GalleryEventProducer eventProducer,
+		ILogger<PaintingsController> logger
+		)
 	{
 		_logger = logger;
-		_context = context;
 		_eventProducer = eventProducer;
+		_repository = repository;
 	}
 
 	// GET: api/paintings
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<PaintingResponseDto>>> GetPaintings()
 	{
-		var paitings = await _context.Paintings
-			.AsNoTracking()
-			.OrderByDescending(p => p.CreatedAt)
-			.ToListAsync();
-
+		var paitings = await _repository.GetAllAsync();
 		return paitings.ToDtoList();
 	}
 
@@ -40,9 +39,7 @@ public class PaintingsController : ControllerBase
 	[HttpGet("{id}")]
 	public async Task<ActionResult<PaintingResponseDto>> GetPainting(Guid id)
 	{
-		var painting = await _context.Paintings
-			.AsNoTracking()
-			.FirstOrDefaultAsync(p => p.Id == id);
+		var painting = await _repository.GetByIdAsync(id);
 
 		if (painting == null)
 			return NotFound();
@@ -56,8 +53,8 @@ public class PaintingsController : ControllerBase
 	{
 		var painting = dto.ToEntity();
 
-		_context.Paintings.Add(painting);
-		await _context.SaveChangesAsync();
+		await _repository.AddAsync(painting);
+		await _repository.SaveChangesAsync();
 
 		// Публикуем событие в Kafka для асинхронной загрузки файла
 		var uploadRequest = new ImageUploadRequestedEvent
@@ -79,18 +76,15 @@ public class PaintingsController : ControllerBase
 	[HttpPut("{id}")]
 	public async Task<IActionResult> UpdatePainting(Guid id, [FromBody] UpdatePaintingDto dto)
 	{
-		var painting = await _context.Paintings.FindAsync(id);
+		var painting = await _repository.GetByIdAsync(id);
 		if (painting == null)
 			return NotFound();
 
-		painting.Title = dto.Title;
-		painting.Artist = dto.Artist;
-		painting.Year = dto.Year;
-		painting.Description = dto.Description;
-		painting.ImageUrl = dto.ImageUrl ?? painting.ImageUrl;
-		painting.UpdatedAt = DateTime.UtcNow;
+		dto.ToEntity(painting);
 
-		await _context.SaveChangesAsync();
+		_repository.Update(painting);
+		await _repository.SaveChangesAsync();
+
 		return NoContent();
 	}
 
@@ -98,12 +92,12 @@ public class PaintingsController : ControllerBase
 	[HttpDelete("{id}")]
 	public async Task<IActionResult> DeletePainting(Guid id)
 	{
-		var painting = await _context.Paintings.FindAsync(id);
+		var painting = await _repository.GetByIdAsync(id);
 		if (painting == null)
 			return NotFound();
 
-		_context.Paintings.Remove(painting);
-		await _context.SaveChangesAsync();
+		_repository.Delete(painting);
+		await _repository.SaveChangesAsync();
 
 		return NoContent();
 	}

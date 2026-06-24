@@ -1,9 +1,8 @@
-﻿using Identity.API.Data;
+﻿using Identity.API.Domain.Repositories;
 using Identity.API.Models;
 using Identity.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -14,12 +13,12 @@ namespace Identity.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-	private readonly AppDbContext _context;
+	private readonly IUserRepository _repository;
 	private readonly JwtService _jwtService;
 
-	public AuthController(AppDbContext context, JwtService jwtService)
+	public AuthController(IUserRepository repository, JwtService jwtService)
 	{
-		_context = context;
+		_repository = repository;
 		_jwtService = jwtService;
 	}
 
@@ -28,13 +27,11 @@ public class AuthController : ControllerBase
 	public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto dto)
 	{
 		// Проверяем, существует ли пользователь
-		var existingUser = await _context.Users
-			.FirstOrDefaultAsync(u => u.Username == dto.Username || u.Email == dto.Email);
+		if (!await _repository.ExistsByEmailAsync(dto.Email))
+			return BadRequest("User with this username already exists");
 
-		if (existingUser != null)
-		{
-			return BadRequest("User with this username or email already exists");
-		}
+		if (await _repository.ExistsByEmailAsync(dto.Email))
+			return BadRequest("User with this email already exists");
 
 		// Создаём пользователя
 		var user = new User
@@ -47,8 +44,8 @@ public class AuthController : ControllerBase
 			CreatedAt = DateTime.UtcNow
 		};
 
-		_context.Users.Add(user);
-		await _context.SaveChangesAsync();
+		await _repository.AddAsync(user);
+		await _repository.SaveChangesAsync();
 
 		// Генерируем токен
 		var token = _jwtService.GenerateToken(user);
@@ -66,9 +63,7 @@ public class AuthController : ControllerBase
 	[HttpPost("login")]
 	public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto dto)
 	{
-		var user = await _context.Users
-			.FirstOrDefaultAsync(u => u.Username == dto.Username);
-
+		var user = await _repository.GetByUsernameAsync(dto.Username);
 		if (user == null || !VerifyPassword(dto.Password, user.PasswordHash))
 		{
 			return Unauthorized("Invalid username or password");
@@ -76,7 +71,9 @@ public class AuthController : ControllerBase
 
 		// Обновляем время последнего входа
 		user.LastLoginAt = DateTime.UtcNow;
-		await _context.SaveChangesAsync();
+
+		_repository.Update(user);
+		await _repository.SaveChangesAsync();
 
 		var token = _jwtService.GenerateToken(user);
 
@@ -95,21 +92,17 @@ public class AuthController : ControllerBase
 	public async Task<ActionResult<User>> GetCurrentUser()
 	{
 		var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-		if (userId == null)
+		if (userId == null || !Guid.TryParse(userId, out var id))
 		{
 			return Unauthorized();
 		}
 
-		var user = await _context.Users
-			.AsNoTracking()
-			.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
-
+		var user = await _repository.GetByIdAsync(id);
 		if (user == null)
 		{
 			return NotFound();
 		}
 
-		// Не возвращаем хэш пароля
 		user.PasswordHash = "";
 		return user;
 	}

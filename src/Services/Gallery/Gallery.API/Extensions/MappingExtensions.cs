@@ -27,7 +27,7 @@ public static class MappingExtensions
 		return paintings.Select(p => p.ToDto()).ToList();
 	}
 
-
+	// Преобразование DTO создания в сущность
 	public static Painting ToEntity(this CreatePaintingDto dto)
 	{
 		return new Painting
@@ -42,5 +42,17 @@ public static class MappingExtensions
 			CreatedAt = DateTime.UtcNow,
 			UpdatedAt = DateTime.UtcNow
 		};
+	}
+
+	// Преобразование DTO обновления в существующую сущность
+	public static Painting ToEntity(this UpdatePaintingDto dto, Painting existingPainting)
+	{
+		existingPainting.Title = dto.Title;
+		existingPainting.Artist = dto.Artist;
+		existingPainting.Year = dto.Year;
+		existingPainting.Description = dto.Description;
+		existingPainting.ImageUrl = dto.ImageUrl ?? existingPainting.ImageUrl;
+		existingPainting.UpdatedAt = DateTime.UtcNow;
+		return existingPainting;
 	}
 }

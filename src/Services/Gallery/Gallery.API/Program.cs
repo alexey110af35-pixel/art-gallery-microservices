@@ -1,4 +1,6 @@
 using Gallery.API.Data;
+using Gallery.API.Domain.Repositories;
+using Gallery.API.Infrastructure.Data;
 using Gallery.API.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
@@ -13,6 +15,7 @@ builder.Services.AddHostedService<GalleryEventConsumer>();
 builder.Services.AddCustomSwagger("Gallery API");
 
 builder.Services.AddDbContext<AppDbContext>();
+builder.Services.AddScoped<IPaintingRepository, PaintingRepository>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
