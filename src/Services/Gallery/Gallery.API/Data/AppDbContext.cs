@@ -29,6 +29,11 @@ public class AppDbContext : DbContext
 			entity.Property(e => e.Artist).IsRequired().HasMaxLength(100);
 			entity.Property(e => e.Description).HasMaxLength(1000);
 			entity.Property(e => e.ImageUrl).HasMaxLength(500);
+			entity.Property(e => e.Status)
+			.HasConversion<string>()
+			.HasMaxLength(20)
+			.HasDefaultValue(PaintingStatus.Pending);
+
 			entity.HasIndex(e => e.Title);
 		});
 

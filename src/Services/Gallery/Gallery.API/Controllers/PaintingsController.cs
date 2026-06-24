@@ -1,4 +1,6 @@
 ﻿using Gallery.API.Data;
+using Gallery.API.Extensions;
+using Gallery.API.Kafka;
 using Gallery.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,26 +13,32 @@ namespace Gallery.API.Controllers;
 [Authorize]
 public class PaintingsController : ControllerBase
 {
+	private readonly ILogger<PaintingsController> _logger;
 	private readonly AppDbContext _context;
+	private readonly GalleryEventProducer _eventProducer;
 
-	public PaintingsController(AppDbContext context)
+	public PaintingsController(ILogger<PaintingsController> logger, AppDbContext context, GalleryEventProducer eventProducer)
 	{
+		_logger = logger;
 		_context = context;
+		_eventProducer = eventProducer;
 	}
 
 	// GET: api/paintings
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Painting>>> GetPaintings()
+	public async Task<ActionResult<IEnumerable<PaintingResponseDto>>> GetPaintings()
 	{
-		return await _context.Paintings
+		var paitings = await _context.Paintings
 			.AsNoTracking()
 			.OrderByDescending(p => p.CreatedAt)
 			.ToListAsync();
+
+		return paitings.ToDtoList();
 	}
 
 	// GET: api/paintings/{id}
 	[HttpGet("{id}")]
-	public async Task<ActionResult<Painting>> GetPainting(Guid id)
+	public async Task<ActionResult<PaintingResponseDto>> GetPainting(Guid id)
 	{
 		var painting = await _context.Paintings
 			.AsNoTracking()
@@ -39,27 +47,30 @@ public class PaintingsController : ControllerBase
 		if (painting == null)
 			return NotFound();
 
-		return painting;
+		return painting.ToDto();
 	}
 
 	// POST: api/paintings
 	[HttpPost]
-	public async Task<ActionResult<Painting>> CreatePainting([FromBody] CreatePaintingDto dto)
+	public async Task<ActionResult<PaintingResponseDto>> CreatePainting([FromBody] CreatePaintingDto dto)
 	{
-		var painting = new Painting
-		{
-			Id = Guid.NewGuid(),
-			Title = dto.Title,
-			Artist = dto.Artist,
-			Year = dto.Year,
-			Description = dto.Description,
-			ImageUrl = dto.ImageUrl ?? "placeholder.jpg",
-			CreatedAt = DateTime.UtcNow,
-			UpdatedAt = DateTime.UtcNow
-		};
+		var painting = dto.ToEntity();
 
 		_context.Paintings.Add(painting);
 		await _context.SaveChangesAsync();
+
+		// Публикуем событие в Kafka для асинхронной загрузки файла
+		var uploadRequest = new ImageUploadRequestedEvent
+		{
+			PaintingId = painting.Id,
+			FileName = $"{painting.Title.Replace(" ", "_")}.jpg", // В реальности имя приходит от клиента
+			ContentType = "image/jpeg",
+			FileSize = 0 // В реальности размер передаётся
+		};
+
+		_logger.LogInformation($"Publishing image upload request for painting {painting.Id}");
+		await _eventProducer.PublishImageUploadRequestedAsync(uploadRequest);
+		_logger.LogInformation($"Image upload request published for painting {painting.Id}");
 
 		return CreatedAtAction(nameof(GetPainting), new { id = painting.Id }, painting);
 	}

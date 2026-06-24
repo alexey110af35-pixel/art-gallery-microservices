@@ -27,11 +27,12 @@
 - [x] Защитить Gallery API
 
 ## Этап 4: Kafka + Upload Service
-- [ ] Создать Upload.API
-- [ ] Настроить Producer в Gallery (публикация ImageUploadRequested)
-- [ ] Настроить Consumer в Upload (обработка и сохранение в MinIO)
-- [ ] Настроить Producer в Upload (публикация ImageUploaded)
-- [ ] Настроить Consumer в Gallery (обновление статуса)
+- [x] Создан Upload.API с интеграцией Kafka и MinIO
+- [x] Настроена публикация событий в Gallery.API при создании картины
+- [x] Настроена обработка событий в Upload.API
+- [x] Настроено обновление статуса картины в Gallery.API по ответу от Upload.API
+- [x] Проверена полная асинхронная цепочка через Kafka
+- [x] Добавлена миграция для поля ImageUrl (допускает NULL)
 
 ## Этап 5: Frontend (React)
 - [ ] Создать React-приложение

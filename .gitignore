@@ -6,3 +6,4 @@
 # Игнорировать папки сборки
 [Bb]in/
 [Oo]bj/
+/src/Services/UploadGo
